@@ -2,18 +2,17 @@
 const myGoggleSheet = SpreadsheetApp.getActive();
 const shUserForm = myGoggleSheet.getSheetByName("Form");
 const dataSheet = myGoggleSheet.getSheetByName("Birthday List");
+const eventConfig = myGoggleSheet.getSheetByName("Event Configuration");
 const ui = SpreadsheetApp.getUi(); //creates instance of the user interface to show the alert
-
 //////////////////////////////////////////////////////////////////////////////
 //SUBMIT RECORD //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 //Function to submit data to birthday database and also to modify it depending on parameter
 function submitData(rowToModify=false){
-   if(!checkInputsAreUnselected()){
+   if(!checkInputsAreUnselectedForm()){
     return
    }
-
-  if(validateData() == true){
+  if(validateDataForm() == true && validateDataEvents()==true){
 
     let row = dataSheet.getLastRow() + 1; //get next blanck row
     
@@ -28,7 +27,7 @@ function submitData(rowToModify=false){
     dataSheet.getRange(row,1).setValue(generateId()); //BirthDayId
 
     }
-    let googleCalendarId = createYearlyEventWithReminders(shUserForm.getRange("D11").getValue(),birthDate,shUserForm.getRange("D17").getValue())
+    let googleCalendarId = createYearlyEventWithReminders(shUserForm.getRange("D11").getValue(),birthDate,shUserForm.getRange("D16").getValue())
     dataSheet.getRange(row,2).setValue(shUserForm.getRange("D11").getValue()); //Name
     dataSheet.getRange(row,3).setValue(birthDate); //Date
     dataSheet.getRange(row,4).setValue(age); //Age
@@ -42,10 +41,9 @@ function submitData(rowToModify=false){
     }
     else{
       ui.alert("Birthday has been succesfully saved!")
-      clearForm(shUserForm);
+      clearForm();
       
     }
-
 
   }
 
@@ -56,7 +54,7 @@ function submitData(rowToModify=false){
 //////////////////////////////////////////////////////////////////////////////
 //Function to search a record by the birthdayId. it can either just search the row or put it on the ui
 function searchRecordById(onlyRow=false){
-  if(!checkInputsAreUnselected()){
+  if(!checkInputsAreUnselectedForm()){
     return
   }
   let str = shUserForm.getRange("D7").getValue();
@@ -81,7 +79,7 @@ function searchRecordById(onlyRow=false){
         shUserForm.getRange("J13").setValue(rowValue[2].getFullYear()) //year
         
 
-        shUserForm.getRange("D17").setValue(rowValue[5]) //description
+        shUserForm.getRange("D16").setValue(rowValue[4]) //description
 
         valueFound=true
 
@@ -106,9 +104,16 @@ function modifyRecord(){
   }
   //user wants to modify. All errors are handle inside both of the following functions
   rowToModify = searchRecordById(true);
+  if(!rowToModify){
+    return
+  }
+  googleCalendarId = dataSheet.getRange(rowToModify,6).getValue()
+  deleteEventFromCalendar(googleCalendarId)
   if(rowToModify){
     submitData(rowToModify)
   }
+
+ 
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -139,19 +144,22 @@ function deleteRecord(){
 //////////////////////////////////////////////////////////////////////////////
 
 function clearForm(){
-  shUserForm.getRange("D7").setValue("").setBackground("#efefef")
-  shUserForm.getRange("D11").setValue("").setBackground("#efefef")
-  shUserForm.getRange("D13").setValue("").setBackground("#efefef")
-  shUserForm.getRange("G13").setValue("").setBackground("#efefef")
-  shUserForm.getRange("J13").setValue("").setBackground("#efefef")
-  shUserForm.getRange("D16").setValue("").setBackground("#efefef")
+
+  //clear Form tab
+  let shUserFormList = ["D7","D11","D13","G13","J13","D16"]
+  shUserFormList.forEach((el)=>{
+  shUserForm.getRange(el).setValue("").setBackground("#efefef")
+
+  })
+
+  //clear event tab
+  let eventConfigList = ["D7","D9","D11","D13","G9","G10","G11","G12","G13","G14","G15","G16","G17"]
+  eventConfigList.forEach((el)=>{
+  eventConfig.getRange(el).setBackground("#efefef")
+
+  })
+   eventConfig.getRange("F7").setBackground("#666666")
+
   
 }
-
-
-
-
-
-
-
 

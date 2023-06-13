@@ -110,6 +110,7 @@ function validateDataEvents(){
 }
 
 
+//-------------------------------------TRIGGERS----------------------------------//
 //THIS FUNCTION UPDATES THE AGE FIELD OF "Birthday List" EVERY TIME A USER OPENS THE PROJECT
 
 function onOpen(e){
@@ -126,4 +127,40 @@ function onOpen(e){
     }
   }
 }
+
+function onEdit(e){
+  sheetName = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet().getName()
+  if(sheetName != "Birthday List") return
+
+  else if(checkIfRangeIsMoreThanOneCell(e.range) && sheetName == "Birthday List"){
+    console.log(e.range.getA1Notation())
+    ui.alert("You should not be editing this sheet, please revert the changes")
+
+  }
+  else if(sheetName == "Birthday List"){
+    ui.alert("You can not write on this sheet, reverting change")
+    console.log(e.range)
+    e.range.setValue(e.oldValue)
+    return
+  }
+  
+}
+
+function checkIfRangeIsMoreThanOneCell(range) {
+  // Assuming 'range' is a Range object
+  var numRows = range.getNumRows();
+  var numColumns = range.getNumColumns();
+  
+  if (numRows > 1 || numColumns > 1) {
+    return true;  // Range is more than one cell
+  } else {
+    return false;  // Range is a single cell
+  }
+}
+
+
+
+
+
+
 
